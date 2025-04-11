@@ -1,14 +1,36 @@
 ---
-- name: set up webserver
-  hosts: all
-  become: true
+- name: Completely remove NGINX from Ubuntu
+  hosts: webservers
+  become: yes
   tasks:
-    - name: ensure nginx is at the latest version
-      apt:
-        name: nginx
-        state: latest
-    - name: start nginx
+
+    - name: Stop and disable NGINX service
       service:
         name: nginx
-        state: started
-        enabled: yes  # if you want to also enable nginx
+        state: stopped
+        enabled: no
+
+    - name: Uninstall NGINX and related packages
+      apt:
+        name:
+          - nginx
+          - nginx-common
+          - nginx-core
+        state: absent
+        purge: yes
+        update_cache: yes
+
+    - name: Remove NGINX configuration directory
+      file:
+        path: /etc/nginx
+        state: absent
+
+    - name: Remove NGINX log directory
+      file:
+        path: /var/log/nginx
+        state: absent
+
+    - name: Remove NGINX cache (if any)
+      file:
+        path: /var/cache/nginx
+        state: absent
